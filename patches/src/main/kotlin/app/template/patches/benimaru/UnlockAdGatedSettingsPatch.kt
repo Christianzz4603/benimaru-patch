@@ -5,6 +5,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.Compatibility
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.string
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -13,8 +15,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import app.morphe.patcher.Compatibility
-import app.morphe.patcher.patch.PatchException
 
 /**
  * Compatibility for Benimaru Tool (com.benimaru.official).
@@ -45,8 +45,7 @@ object HandlePremiumFeatureFingerprint : Fingerprint(
 
 /**
  * Locates the static lambda that currently launches the rewarded ad.
- * Matches by defining class + exact signature + presence of the showRewardedAd call.
- * Avoids sole reliance on the synthetic method name.
+ * Matches by defining class + exact signature + the distinctive "it" null-check string.
  */
 object HandlePremiumFeatureLambdaFingerprint : Fingerprint(
     definingClass = "Lcom/benimaru/official/MainActivity;",
@@ -58,9 +57,7 @@ object HandlePremiumFeatureLambdaFingerprint : Fingerprint(
         "Lcom/google/android/material/button/MaterialButton;"
     ),
     filters = listOf(
-        // Unique call that only this lambda makes
-        // (the MethodReference will be matched by the filter implementation)
-        string("it") // the checkNotNullParameter argument
+        string("it")
     )
 )
 
@@ -74,7 +71,8 @@ val unlockAdGatedSettingsPatch = bytecodePatch(
 
     execute {
         // ------------------------------------------------------------------
-        // 1. Change the button label (only the const-string inside handlePremiumFeature)
+        // 1. Change the button label
+        //    Original: const-string v4, "Watch ad to unlock"
         // ------------------------------------------------------------------
         HandlePremiumFeatureFingerprint.method.apply {
             implementation!!.instructions.forEachIndexed { index, instruction ->
@@ -93,30 +91,32 @@ val unlockAdGatedSettingsPatch = bytecodePatch(
 
         // ------------------------------------------------------------------
         // 2. Make the primary button unlock immediately
+        //
+        // Original handlePremiumFeature$lambda$6 body (from decompiled Smali):
+        //
+        //   .locals 1
+        //   const-string v0, "it"
+        //   invoke-static {p2, v0}, Lkotlin/jvm/internal/Intrinsics;->checkNotNullParameter(...)
+        //   new-instance p2, ...Lambda75;
+        //   invoke-direct {p2, p1}, ...Lambda75;-><init>(Lkotlin/jvm/functions/Function0;)V
+        //   invoke-direct {p0, p2}, ...->showRewardedAd(Lkotlin/jvm/functions/Function0;)V
+        //   sget-object p0, Lkotlin/Unit;->INSTANCE:Lkotlin/Unit;
+        //   return-object p0
+        //
+        // p0 = MainActivity
+        // p1 = original Function0 (the real feature unlock/action callback)
+        // p2 = MaterialButton
+        //
+        // We surgically remove the three instructions that create the wrapper
+        // and call showRewardedAd, then insert a direct invoke of p1.
         // ------------------------------------------------------------------
-        // Original instruction sequence inside handlePremiumFeature$lambda$6
-        // (0-based indices after the method header):
-        //
-        // 0  const-string v0, "it"
-        // 1  invoke-static {p2, v0}, ...checkNotNullParameter...
-        // 2  new-instance p2, ...Lambda75;
-        // 3  invoke-direct {p2, p1}, ...Lambda75;-><init>...
-        // 4  invoke-direct {p0, p2}, ...->showRewardedAd(...)
-        // 5  sget-object p0, Lkotlin/Unit;->INSTANCE:Lkotlin/Unit;
-        // 6  return-object p0
-        //
-        // We surgically replace indices 2-4 with a single direct invoke of the
-        // original Function0 (p1). Everything else (locals, null-check, return)
-        // stays exactly as the compiler emitted it.
-
         val lambda = HandlePremiumFeatureLambdaFingerprint.method
 
-        // Locate the invoke-direct that calls showRewardedAd
         val showAdIndex = lambda.implementation!!.instructions.indexOfFirst { insn ->
             if (insn.opcode != Opcode.INVOKE_DIRECT) return@indexOfFirst false
             val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
             ref?.name == "showRewardedAd" &&
-            ref.definingClass == "Lcom/benimaru/official/MainActivity;"
+                ref.definingClass == "Lcom/benimaru/official/MainActivity;"
         }
 
         if (showAdIndex == -1) {
@@ -125,19 +125,14 @@ val unlockAdGatedSettingsPatch = bytecodePatch(
             )
         }
 
-        // The three instructions we want to replace are:
-        //   new-instance  (showAdIndex - 2)
-        //   invoke-direct <init>  (showAdIndex - 1)
-        //   invoke-direct showRewardedAd  (showAdIndex)
+        // new-instance + invoke-direct <init> + invoke-direct showRewardedAd
         val start = showAdIndex - 2
         if (start < 0) {
             throw PatchException("Unexpected instruction layout around showRewardedAd")
         }
 
-        // Remove the three instructions (from last to first to keep indices valid)
         lambda.removeInstructions(start, 3)
 
-        // Insert the direct callback invocation at the same position
         lambda.addInstructions(
             start,
             """
