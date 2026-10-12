@@ -1,7 +1,7 @@
 {
-  "created_at": "",
-  "description": "",
-  "download_url": "",
+  "created_at": "2026-10-12T11:10:56",
+  "description": "## 1.0.0 (2026-10-12)\n\n### ✨ New Features\n\n* unlock ad-gated settings for Benimaru Tool ([4af0446](https://github.com/Christianzz4603/benimaru-patch/commit/4af04465b0a678729ee73a9cdda6538788bc6d49))",
+  "download_url": "https://github.com/Christianzz4603/benimaru-patch/releases/download/v1.0.0/patches-1.0.0.mpp",
   "signature_download_url": "",
-  "version": ""
+  "version": "1.0.0"
 }
