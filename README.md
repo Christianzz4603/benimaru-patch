@@ -15,7 +15,18 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.0.1](https://github.com/Christianzz4603/benimaru-patch/releases/tag/v1.0.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
+> **[v1.1.0](https://github.com/Christianzz4603/benimaru-patch/releases/tag/v1.1.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;3 patches total
+<details open>
+<summary>📦 Benimaru Tool&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Bypass unofficial APK check](#bypass-unofficial-apk-check) | Disables the 'Unofficial APK detected! Closing app.' signature check so the app no longer force-closes when the signing certificate does not match the official one. |  |
+| [Unlock ad-gated settings](#unlock-ad-gated-settings) | Changes the 'Watch ad to unlock' button label to 'Unlock' and makes the button invoke the original feature callback directly without showing a rewarded advertisement. |  |
+
+</details>
+
 <details open>
 <summary>📦 XYZ app&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -28,16 +39,6 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Example Patch](#example-patch) | Example patch to start with. |  |
-
-</details>
-
-<details open>
-<summary>📦 Benimaru Tool&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
-<br>
-
-| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
-|----------|----------------|-----------|
-| [Unlock ad-gated settings](#unlock-ad-gated-settings) | Changes the 'Watch ad to unlock' button label to 'Unlock' and makes the button invoke the original feature callback directly without showing a rewarded advertisement. |  |
 
 </details>
 

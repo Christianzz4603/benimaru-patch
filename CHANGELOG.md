@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/Christianzz4603/benimaru-patch/compare/v1.0.1...v1.1.0) (2026-10-12)
+
+### ✨ New Features
+
+* bypass unofficial APK signature check ([825d504](https://github.com/Christianzz4603/benimaru-patch/commit/825d504083f27f1853ea39eb8af2d4b26d7c0278))
+
 ## [1.0.1](https://github.com/Christianzz4603/benimaru-patch/compare/v1.0.0...v1.0.1) (2026-10-12)
 
 ### 🐛 Bug Fixes
