@@ -1,4 +1,4 @@
-package app.morphe.patches.benimaru
+package app.template.patches.benimaru
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
@@ -13,6 +13,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import app.morphe.patcher.Compatibility
+import app.morphe.patcher.patch.PatchException
 
 /**
  * Compatibility for Benimaru Tool (com.benimaru.official).
